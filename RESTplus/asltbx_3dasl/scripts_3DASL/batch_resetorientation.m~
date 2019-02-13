@@ -1,0 +1,11 @@
+% File: batch_reset_orientation_t1.m
+P=[];
+for sb=1:PAR.nsubs
+    for s=2%1:PAR.subs(sb).nsess
+        for j=1:PAR.subs(sb).ses(s).nasl
+            P=strvcat(P,spm_select('EXTFPList', PAR.subs(sb).ses(s).aslfolders{j}, ['^' PAR.confilters{1} '.*.nii'], 1:10));
+            P=strvcat(P,spm_select('EXTFPList', PAR.subs(sb).ses(s).aslcbffolders{j}, ['^' PAR.aslcbffilters{1} '.*.nii'], 1:10));
+        end
+    end
+end
+ASLtbx_resetimgorgASL(P);

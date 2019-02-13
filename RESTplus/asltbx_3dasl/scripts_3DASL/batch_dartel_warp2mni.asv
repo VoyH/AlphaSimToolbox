@@ -1,0 +1,36 @@
+% File: batch_warp2mni.m
+% batch warp the jd*c1 image to MNI space.
+% Toolbox for batch processing ASL perfusion based fMRI data.
+% All rights reserved.
+% Ze Wang @ TRC, CFN, Upenn 2004
+% This file is made specifically for the longitudinal data. segmentation is
+% applied to the mean image of the longitudinal scans
+ST=1;   % right now we only consider the first scan
+imgs=[];
+fields=[];
+jdfiles=[];
+for sb=1:PAR.nsubs
+    for s=1%:PAR.subs(sb).nsess   % avg image is saved in the folder of the first session
+        uf=spm__select('EXTFPList', PAR.subs(sb).ses(s).structdir{ST}, ['^u_rc1avg_.*\.nii'],1);
+        if isempty(uf)
+            fprintf('No u field map found for %s \n', PAR.subs(sb).ses(s).structdir{ST});
+            fprintf('\t We will skip this subject.\n');
+            continue;
+        else
+            jf=spm_select('EXTFPList', PAR.subs(sb).ses(s).structdir{ST}, ['^jdc1avg\.nii'], 1);
+            if isempty(jf)
+                fprintf('No jd map found for %s \n', PAR.subs(sb).ses(s).structdir{ST});
+                fprintf('\t We will skip this subject.\n');
+                continue;
+            end
+        end
+        fields=strvcat(fields, uf);
+        jdfiles=strvcat(jdfiles, jf);
+       
+    end
+end
+ASLtbx_dartelwarp2mni_man
+
+
+
+

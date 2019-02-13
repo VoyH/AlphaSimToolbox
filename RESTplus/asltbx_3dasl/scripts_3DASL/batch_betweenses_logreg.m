@@ -1,0 +1,37 @@
+% scripts for the pairwise before and after drug T1 registration
+% the output will be an averaged image and the associated transform matrix
+% File: batch_betweenses_logreg.m
+ST=1;   % only for the first scan
+clear pairs*
+for sb=1:PAR.nsubs
+    for s=1:PAR.subs(sb).nsess
+        t1img=spm_select('EXTFPList', PAR.subs(sb).ses(s).structdir{ST}, ['.*' PAR.anatname '.*.nii'], 1);
+        if isempty(t1img)
+            t1img=spm_select('EXTFPList', PAR.subs(sb).ses(s).structdir{ST}, ['.*' PAR.anatname2 '.*.nii'], 1);
+            if isempty(t1img)
+                fprintf('no T1 image found for sub:%s, ses:%d \n', PAR.subjects{sb}, s);
+            end
+        end
+        imgs{s, sb}=t1img;
+    end
+end
+
+for sb=1:PAR.nsubs
+    pairs1{sb,:}=deblank(imgs{1,sb});
+end
+for sb=1:PAR.nsubs
+    pairs2{sb,:}=deblank(imgs{2,sb});
+end
+fprintf('Run within-subject registration. May take days! Please wait....\n');
+matlabbatch{1}.spm.tools.longit{1}.pairwise.vols1 = pairs1;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.vols2 = pairs2;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.tdif = 1;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.noise = NaN;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.wparam = [0 0 100 25 100];
+matlabbatch{1}.spm.tools.longit{1}.pairwise.bparam = 1000000;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.write_avg = 1;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.write_jac = 1;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.write_div = 1;
+matlabbatch{1}.spm.tools.longit{1}.pairwise.write_def = 1;
+cfg_util('run', matlabbatch);
+clear matlabbatch;

@@ -1,0 +1,38 @@
+% File: batch_calccbf.m
+% purpose: to calculate CBF using the mean Perf difference image and M0wm
+%          M0wm is extracted from a white matter mask
+defaults=spm_get_defaults;
+%spm_defaults;
+
+for sb=1:PAR.nsubs
+    
+    for s=1:PAR.subs(sb).nsess
+        for j=1:PAR.subs(sb).ses(s).nasl
+            perfimg=spm_select('EXTFPList', PAR.subs(sb).ses(s).aslfolders{j}, ['^' PAR.confilters{1} '.*\.nii'], 1);    % this is specific to the GE data
+            M0img=spm_select('EXTFPList', PAR.subs(sb).ses(s).aslfolders{j}, ['^' PAR.confilters{1} '.*\.nii'], 2)
+%             wmimg=spm_select('FPList', PAR.subs(sb).ses(s).aslfolders{j}, ['rbk_c2avg.*\.nii']);
+%             v=spm_vol(wmimg);
+%             dat=spm_read_vols(v);
+%             %only take the 30th slice
+%             [sx,sy,sz]=size(dat);
+%             mask=zeros(size(dat));
+%             mask( ceil(sx/4):floor(3/4*sx), ceil(sy/4):floor(3/4*sy),30)=1;
+%             dat=dat.*mask;
+            
+%             gmimg=spm_select('FPList', PAR.subs(sb).ses(s).aslfolders{j}, ['rbk_c1avg.*\.nii']);
+            v=spm_vol(perfimg);
+            perf=spm_read_vols(v);
+            v=spm_vol(M0img);
+            M0=spm_read_vols(v);
+            brainidx=perf>20;
+            idx=dat>0.99;
+            v=spm_vol(perfimg);
+            cbf=aslsimpsub(1, perf, M0, 1450, 1525, 0, 0.85, brainidx);
+            v.fname=fullfile(PAR.subs(sb).ses(s).aslfolders{j}, ['New'  PAR.confilters{1} '.nii']);
+            v.n=[1 1];
+            v=spm_write_vol(v,cbf/50);
+      end
+    
+    end
+ 
+end
